@@ -20,18 +20,21 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "sandbox")
 LOANS_COLLECTION = f"{ENVIRONMENT}.loans.rates"
 
 # MongoDB connection
-logger.info("Connecting to MongoDB...")
+logger.debug("Connecting to MongoDB...")
 client = MongoClient(MONGO_URI)
 db = client[DATABASE_NAME]
-logger.info("Connected to MongoDB Atlas")
+logger.debug("Connected to MongoDB Atlas")
 
+current_directory = os.path.dirname(os.path.realpath(__file__))
+log_path = os.path.join(current_directory, "OpenGoLogo.png")
 # Streamlit UI setup
 st.set_page_config(page_title="Comparador de empréstimo bancário", layout="wide")
-st.sidebar.image("OpenGoLogo.png", use_column_width=True)
+st.sidebar.image(log_path, use_column_width=True)
 st.header("Comparação de taxas de empréstimo")
 
+
 try:
-    logger.info("Fetching loans data from MongoDB...")
+    logger.debug("Fetching loans data from MongoDB...")
     logger.debug(f"Collection name: {LOANS_COLLECTION}")
     loans_data = db[LOANS_COLLECTION].find()
     loans_data_count = db[LOANS_COLLECTION].count_documents({})
@@ -47,14 +50,14 @@ try:
         person_type = "Pessoa Física" if api_family_type == "opendata-loans_personal-loans" else "Pessoa Jurídica"
         loan_data = data.get("loans", {}).get("data", [])
 
-        logger.info(f"person_type: {person_type}")
+        logger.debug(f"person_type: {person_type}")
 
         for loan in (loan_data or []):
             participant_info = loan.get("participant", {})
             logger.debug(f"Processing loan data for participant: {participant_info.get('brand')}")
             fees = loan.get("fees", {}).get("services", [])
             for interestedRate in loan.get('interestRates', {}):
-                logger.info(f"minimumRate {interestedRate.get('minimumRate', "Não informado")}")
+                logger.debug(f"minimumRate {interestedRate.get('minimumRate', "Não informado")}")
                 all_fees_data.append(
                     {
                         "Taxa Mínima (R$)":
@@ -117,7 +120,7 @@ try:
             filtered_fees_df = fees_df
 
         # Group data by Organização and Service Name to remove duplicates
-        logger.info("Grouping fees data by Organisation and Service Name to remove duplicates...")
+        logger.debug("Grouping fees data by Organisation and Service Name to remove duplicates...")
         grouped_fees_df = filtered_fees_df.groupby(['Organização', 'Marca'], as_index=False).first()
 
         # Display filtered DataFrame
@@ -156,6 +159,16 @@ try:
     else:
         logger.warning("No data available for loans.")
         st.write("No data available for loans.")
+
+    st.sidebar.markdown("---")  # Linha horizontal para separar visualmente
+    st.sidebar.markdown(
+        """
+        <div style="text-align: center; font-size: 12px;">
+            Desenvolvido por: <a href="https://github.com/alexpereiramaranhao" target="_blank">Alex Pereira Maranhão</a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 except Exception as e:
     logger.error(f"Error fetching loans analytics: {e}")

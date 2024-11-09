@@ -11,4 +11,6 @@ RUN pip install poetry && \
 
 COPY / /app/opengo/
 
-CMD ["python", "/app/opengo/pengo_analytics/og_analytics.py"]
+HEALTHCHECK CMD ["curl", "--fail", "http://localhost:5000/_stcore/health"]
+
+ENTRYPOINT ["streamlit", "run", "/app/opengo/opengo_analytics/og_analytics.py", "--server.port=5000", "--server.address=0.0.0.0"]
