@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  opengo_analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opengo_analytics
+    environment:
+      MONGO_URI: mongodb+srv://user:pass@domain?retryWrites=true&w=majority&appName=opengo
+      DATABASE_NAME: opengo
+      ENVIRONMENT: production
+    ports:
+      - "8501:8501"
+    command: streamlit run /app/opengo/pengo_analytics/og_analytics.py
