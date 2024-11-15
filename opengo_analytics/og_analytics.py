@@ -1,3 +1,5 @@
+from operator import iconcat
+
 import streamlit as st
 import os
 import logging
@@ -31,6 +33,47 @@ log_path = os.path.join(current_directory, "OpenGoLogo.png")
 st.set_page_config(page_title="Comparador de empréstimo bancário", layout="wide")
 st.sidebar.image(log_path, use_column_width=True)
 st.header("Comparação de taxas de empréstimo")
+
+@st.dialog(title="Como usar a aplicação?", width="large")
+def show_help_dialog():
+    st.markdown(
+        """
+        <div style="font-size: 12px; color: #555;">
+            <p>Esta aplicação permite comparar taxas de empréstimos de diferentes instituições financeiras participantes do Open Finance Brasil. Utilize os filtros na barra lateral para refinar sua pesquisa:</p>
+            <ul>
+                <li><strong>Tipo pessoa</strong>: Selecione se deseja ver empréstimos para Pessoa Física ou Pessoa Jurídica.</li>
+                <li><strong>Instituição</strong>: Escolha uma ou mais instituições financeiras específicas para comparar as taxas.</li>
+                <li><strong>Tipo empréstimo</strong>: Filtre pelo tipo específico de empréstimo oferecido, como crédito pessoal ou consignado.</li>
+                <li><strong>Mostrar todas as instituições</strong>: Marque esta opção para visualizar todas as instituições disponíveis na tabela.</li>
+            </ul>
+            <p>Os resultados são apresentados na tabela abaixo. Para entender os campos da tabela, veja a sessão "Ajuda" no menu ao lado.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    with st.expander("O que quer dizer cada campo?"):
+        st.markdown(
+            """
+            <div style="font-size: 12px; color: #555;">                
+                <ul>
+                    <li><strong>Instituição</strong>: Nome da instituição financeira participante do Open Finance que oferece o produto.</li>
+                    <li><strong>Marca</strong>: Nome da marca da instituição financeira.</li>
+                    <li><strong>CNPJ</strong>: Número do CNPJ da instituição.</li>
+                    <li><strong>Nome do Serviço</strong>: Nomes das Tarifas cobradas sobre Serviços relacionados à Modalidade informada do Empréstimo para pessoa física/jurídica.</li>
+                    <li><strong>Informação de Cobrança</strong>: Fatores geradores de cobrança que incidem sobre as Modalidades informada de Empréstimos para pessoa física/jurídica.</li>
+                    <li><strong>Valor Mínimo (BRL)</strong>: Valor mínimo apurado para a tarifa de serviços sobre a base de clientes no mês de referência.<br><em>Observação:</em> Para efeito de comparação de taxas dos produtos, as instituições participantes, quando não cobram tarifas, devem enviar o valor 0.00 sinalizando que para aquela taxa não há cobrança.</li>
+                    <li><strong>Valor Máximo (BRL)</strong>: Valor máximo apurado para a tarifa de serviços sobre a base de clientes no mês de referência.<br><em>Observação:</em> Para efeito de comparação de taxas dos produtos, as instituições participantes, quando não cobram tarifas, devem enviar o valor 0.00 sinalizando que para aquela taxa não há cobrança pelo serviço.</li>
+                    <li><strong>Intervalo</strong>: Segundo Normativa nº 32, BCB, de 2020: Distribuição de frequência relativa dos valores de tarifas cobradas dos clientes, de que trata o § 2º do art. 3º da Circular nº 4.015, de 2020, deve dar-se com base em quatro faixas de igual tamanho, com explicitação dos valores sobre a mediana em cada uma dessas faixas. Informando: 1ª faixa, 2ª faixa, 3ª faixa e 4ª faixa.</li>
+                    <li><strong>Valor (BRL)</strong>: Valor da mediana de cada faixa relativa ao serviço ofertado, informado no período, conforme Res nº 32 BCB, 2020. Exemplo: '45.00' (representa um valor monetário; por exemplo: 1547368.92, que significa R$ 1.547.368,92, considerando a moeda BRL, com o único separador sendo o '.' para indicar a casa decimal e sem separador de milhar).<br><em>Observação:</em> Para efeito de comparação de taxas dos produtos, as instituições participantes, quando não cobram tarifas, devem enviar o valor 0.00 sinalizando que para aquela taxa não há cobrança pelo serviço.</li>
+                    <li><strong>Taxa</strong>: Percentual de clientes em cada faixa.</li>
+                    <li><strong>Termos e Condições</strong>: Link para os termos e condições do empréstimo.</li>
+                    <li><strong>Tipo de Pessoa</strong>: Indica se o empréstimo é para pessoa física ou jurídica.</li>
+                </ul>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 
 try:
@@ -134,22 +177,6 @@ try:
         st.dataframe(grouped_fees_df, use_container_width=True,
                      height=int(len(grouped_fees_df) * 35) if len(grouped_fees_df) < 20 else 700)
 
-        with st.expander("Como usar a aplicação"):
-            st.markdown(
-                """
-                <p style="font-size: 10px; color: #555;">
-                Esta aplicação permite comparar taxas de empréstimos de diferentes instituições financeiras participantes do Open Finance Brasil. Utilize os filtros na barra lateral para refinar sua pesquisa:
-                <ul>
-                    <li><strong>Tipo pessoa</strong>: Selecione se deseja ver empréstimos para Pessoa Física ou Pessoa Jurídica.</li>
-                    <li><strong>Instituição</strong>: Escolha uma ou mais instituições financeiras específicas para comparar as taxas.</li>
-                    <li><strong>Tipo empréstimo</strong>: Filtre pelo tipo específico de empréstimo oferecido, como crédito pessoal ou consignado.</li>
-                    <li><strong>Mostrar todas as instituições</strong>: Marque esta opção para visualizar todas as instituições disponíveis na tabela.</li>
-                </ul>
-                Os resultados são apresentados na tabela abaixo. Para entender os campos da tabela, veja a sessão "Ajuda" no menu ao lado.
-                </p>
-                """,
-                unsafe_allow_html=True
-            )
 
         st.markdown(
             "Os dados dessa aplicação são provenientes das próprias instituições financeiras e são obtidos através do [Open Finance Brasil](https://openfinancebrasil.org.br/).")
@@ -157,29 +184,10 @@ try:
                  use_column_width=False, width=150)
 
         st.sidebar.header("Ajuda")
-        with st.sidebar.expander("Explicação dos campos da tabela"):
-            st.markdown(
-                """
-                - **Instituição**: Nome da instituição financeira participante do Open Finance que oferece o produto.
-                - **Marca**: Nome da marca da instituição financeira.
-                - **CNPJ**: Número do CNPJ da instituição.
-                - **Nome do Serviço**: Nomes das Tarifas cobradas sobre Serviços relacionados à Modalidade informada do Empréstimo para pessoa física/jurídica.
-                - **Informação de Cobrança**: Fatores geradores de cobrança que incidem sobre as Modalidades informada de Empréstimos para pessoa física/jurídica.
-                - **Valor Mínimo (BRL)**: Valor mínimo apurado para a tarifa de serviços sobre a base de clientes no mês de referência
 
-                    Observação: Para efeito de comparação de taxas dos produtos, as instituições participantes, quando não cobram tarifas, devem enviar o valor 0.00 sinalizando que para aquela taxa não há cobrança
-                - **Valor Máximo (BRL)**: Valor máximo apurado para a tarifa de serviços sobre a base de clientes no mês de referência
+        if st.sidebar.button("Como usar a aplicação"):
+            show_help_dialog()
 
-                    Observação: Para efeito de comparação de taxas dos produtos, as instituições participantes, quando não cobram tarifas, devem enviar o valor 0.00 sinalizando que para aquela taxa não há cobrança pelo serviço.
-                - **Intervalo**: Segundo Normativa nº 32, BCB, de 2020: Distribuição de frequência relativa dos valores de tarifas cobradas dos clientes, de que trata o § 2º do art. 3º da Circular nº 4.015, de 2020, deve dar-se com base em quatro faixas de igual tamanho, com explicitação dos valores sobre a mediana em cada uma dessas faixas. Informando: 1ª faixa, 2ª faixa, 3ª faixa e 4ª faixa
-                - **Valor (BRL)**: Valor da mediana de cada faixa relativa ao serviço ofertado, informado no período, conforme Res nº 32 BCB, 2020. p.ex. '45.00' (representa um valor monetário. p.ex: 1547368.92. Este valor, considerando que a moeda seja BRL, significa R$ 1.547.368,92. O único separador presente deve ser o '.' (ponto) para indicar a casa decimal. Não deve haver separador de milhar).
-
-                    Observação: Para efeito de comparação de taxas dos produtos, as instituições participantes, quando não cobram tarifas, devem enviar o valor 0.00 sinalizando que para aquela taxa não há cobrança pelo serviço.
-                - **Taxa**: Percentual de clientes em cada faixa.
-                - **Termos e Condições**: Link para os termos e condições do empréstimo.
-                - **Tipo de Pessoa**: Indica se o empréstimo é para pessoa física ou jurídica.
-                """
-            )
     else:
         logger.warning("No data available for loans.")
         st.write("No data available for loans.")
@@ -197,3 +205,4 @@ try:
 except Exception as e:
     logger.error(f"Error fetching loans analytics: {e}")
     st.error(f"Unable to fetch loans data. {e}")
+
