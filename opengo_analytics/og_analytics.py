@@ -31,22 +31,7 @@ log_path = os.path.join(current_directory, "OpenGoLogo.png")
 st.set_page_config(page_title="Comparador de empréstimo bancário", layout="wide")
 st.sidebar.image(log_path, use_column_width=True)
 st.header("Comparação de taxas de empréstimo")
-with st.expander("Como usar a aplicação"):
-    st.markdown(
-        """
-        <p style="font-size: 10px; color: #555;">
-        Esta aplicação permite comparar taxas de empréstimos de diferentes instituições financeiras participantes do Open Finance Brasil. Utilize os filtros na barra lateral para refinar sua pesquisa:
-        <ul>
-            <li><strong>Tipo pessoa</strong>: Selecione se deseja ver empréstimos para Pessoa Física ou Pessoa Jurídica.</li>
-            <li><strong>Instituição</strong>: Escolha uma ou mais instituições financeiras específicas para comparar as taxas.</li>
-            <li><strong>Tipo empréstimo</strong>: Filtre pelo tipo específico de empréstimo oferecido, como crédito pessoal ou consignado.</li>
-            <li><strong>Mostrar todas as instituições</strong>: Marque esta opção para visualizar todas as instituições disponíveis na tabela.</li>
-        </ul>
-        Os resultados são apresentados na tabela abaixo. Para entender os campos da tabela, veja a sessão "Ajuda" no menu ao lado.
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
+
 
 try:
     logger.debug("Fetching loans data from MongoDB...")
@@ -148,6 +133,23 @@ try:
         # Display filtered DataFrame
         st.dataframe(grouped_fees_df, use_container_width=True,
                      height=int(len(grouped_fees_df) * 35) if len(grouped_fees_df) < 20 else 700)
+
+        with st.expander("Como usar a aplicação"):
+            st.markdown(
+                """
+                <p style="font-size: 10px; color: #555;">
+                Esta aplicação permite comparar taxas de empréstimos de diferentes instituições financeiras participantes do Open Finance Brasil. Utilize os filtros na barra lateral para refinar sua pesquisa:
+                <ul>
+                    <li><strong>Tipo pessoa</strong>: Selecione se deseja ver empréstimos para Pessoa Física ou Pessoa Jurídica.</li>
+                    <li><strong>Instituição</strong>: Escolha uma ou mais instituições financeiras específicas para comparar as taxas.</li>
+                    <li><strong>Tipo empréstimo</strong>: Filtre pelo tipo específico de empréstimo oferecido, como crédito pessoal ou consignado.</li>
+                    <li><strong>Mostrar todas as instituições</strong>: Marque esta opção para visualizar todas as instituições disponíveis na tabela.</li>
+                </ul>
+                Os resultados são apresentados na tabela abaixo. Para entender os campos da tabela, veja a sessão "Ajuda" no menu ao lado.
+                </p>
+                """,
+                unsafe_allow_html=True
+            )
 
         st.markdown(
             "Os dados dessa aplicação são provenientes das próprias instituições financeiras e são obtidos através do [Open Finance Brasil](https://openfinancebrasil.org.br/).")
