@@ -32,7 +32,6 @@ st.set_page_config(page_title="Comparador de empréstimo bancário", layout="wid
 st.sidebar.image(log_path, use_column_width=True)
 st.header("Comparação de taxas de empréstimo")
 
-
 try:
     logger.debug("Fetching loans data from MongoDB...")
     logger.debug(f"Collection name: {LOANS_COLLECTION}")
@@ -61,12 +60,13 @@ try:
                 all_fees_data.append(
                     {
                         "Taxa Mínima (R$)":
-                            f"{float(interestedRate.get('minimumRate', "Não informado"))*100:.2f}%".replace(',',
-                                                                                                        'X').replace(
+                            f"{float(interestedRate.get('minimumRate', "Não informado")) * 100:.2f}%".replace(',',
+                                                                                                              'X').replace(
                                 '.', ',').replace('X', '.'),
 
-                        "Taxa Máxima (R$)": f"{float(interestedRate.get('maximumRate', "Não informado"))*100:.2f}%".replace(',',
-                                                                                                                        'X').replace(
+                        "Taxa Máxima (R$)": f"{float(interestedRate.get('maximumRate', "Não informado")) * 100:.2f}%".replace(
+                            ',',
+                            'X').replace(
                             '.', ',').replace('X', '.'),
                         "Indexador Referencial": interestedRate.get("referentialRateIndexer").replace('_',
                                                                                                       ' ').title(),
@@ -95,22 +95,28 @@ try:
 
         person_type_filter = st.sidebar.selectbox("Tipo pessoa", options=fees_df["Person Type"].unique(),
                                                   on_change=reset_show_all)
+
         institution_options = fees_df[fees_df["Person Type"] == person_type_filter]["Marca"].unique()
-        institution_filter = st.sidebar.selectbox("Instituição",
-                                                  options=[option for option in institution_options if option],
-                                                  on_change=reset_show_all)
+        institution_filter = st.sidebar.multiselect("Instituição",
+                                                    options=[option for option in institution_options if option],
+                                                    default=institution_options[:2] if len(institution_options)>2 else [
+                                                        0],
+                                                    on_change=reset_show_all)
         loan_type_options = \
-            fees_df[(fees_df["Person Type"] == person_type_filter) & (fees_df["Marca"] == institution_filter)][
+            fees_df[(fees_df["Person Type"] == person_type_filter) & (fees_df["Marca"].isin(institution_filter))][
                 "Type"].unique()
-        loan_type_filter = st.sidebar.selectbox("Tipo empréstimo",
-                                                options=[option for option in loan_type_options if option],
-                                                on_change=reset_show_all)
+
+        logger.info("Passou do multiselect Person")
+        loan_type_filter = st.sidebar.multiselect("Tipo empréstimo",
+                                                  options=[option for option in loan_type_options if option],
+                                                  default=loan_type_options[0] if loan_type_options.any() else [],
+                                                  on_change=reset_show_all)
 
         # Apply filters to DataFrame
         filtered_fees_df = fees_df[
             (fees_df["Person Type"] == person_type_filter) &
-            (fees_df["Marca"] == institution_filter) &
-            (fees_df["Type"] == loan_type_filter)
+            (fees_df["Marca"].isin(institution_filter)) &
+            (fees_df["Type"].isin(loan_type_filter))
             ]
 
         # Option to show all items
