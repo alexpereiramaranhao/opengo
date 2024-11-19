@@ -4,6 +4,7 @@ import streamlit as st
 import os
 import logging
 import pandas as pd
+from pyarrow.lib import ordered_dict
 from pymongo import MongoClient
 
 TABLE_HEADERS = ["Organização", "Marca", "Type", "Taxa Mínima (R$)", "Taxa Máxima (R$)", "Indexador Referencial",
@@ -141,6 +142,7 @@ try:
                                                   on_change=reset_show_all)
 
         institution_options = fees_df[fees_df["Person Type"] == person_type_filter]["Marca"].unique()
+
         institution_filter = st.sidebar.multiselect("Instituição",
                                                     options=[option for option in institution_options if option],
                                                     default=institution_options[:2] if len(institution_options)>2 else [
@@ -150,10 +152,8 @@ try:
             fees_df[(fees_df["Person Type"] == person_type_filter) & (fees_df["Marca"].isin(institution_filter))][
                 "Type"].unique()
 
-        logger.info("Passou do multiselect Person")
         loan_type_filter = st.sidebar.multiselect("Tipo empréstimo",
                                                   options=[option for option in loan_type_options if option],
-                                                  default=loan_type_options[0] if loan_type_options.any() else [],
                                                   on_change=reset_show_all)
 
         # Apply filters to DataFrame
@@ -161,7 +161,7 @@ try:
             (fees_df["Person Type"] == person_type_filter) &
             (fees_df["Marca"].isin(institution_filter)) &
             (fees_df["Type"].isin(loan_type_filter))
-            ]
+        ]
 
         # Option to show all items
         show_all = st.sidebar.checkbox("Mostrar todas as instituições", key="show_all")
@@ -169,14 +169,9 @@ try:
         if show_all:
             filtered_fees_df = fees_df
 
-        # Group data by Organização and Service Name to remove duplicates
-        logger.debug("Grouping fees data by Organisation and Service Name to remove duplicates...")
-        grouped_fees_df = filtered_fees_df.groupby(['Organização', 'Marca'], as_index=False).first()
-
         # Display filtered DataFrame
-        st.dataframe(grouped_fees_df, use_container_width=True,
-                     height=int(len(grouped_fees_df) * 35) if len(grouped_fees_df) < 20 else 700)
-
+        st.dataframe(filtered_fees_df.sort_values(by="Type"), use_container_width=True,
+                     height=int(len(filtered_fees_df) * 35) if len(filtered_fees_df) < 20 else 700)
 
         st.markdown(
             "Os dados dessa aplicação são provenientes das próprias instituições financeiras e são obtidos através do [Open Finance Brasil](https://openfinancebrasil.org.br/).")
