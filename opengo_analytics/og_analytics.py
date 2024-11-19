@@ -171,8 +171,7 @@ try:
             filtered_fees_df = fees_df
 
         # Display filtered DataFrame
-        st.dataframe(filtered_fees_df.sort_values(by="Type"), use_container_width=True,
-                     height=int(len(filtered_fees_df) * 35) if len(filtered_fees_df) < 20 else 700)
+        st.dataframe(filtered_fees_df.sort_values(by="Type"), use_container_width=True)
 
         st.markdown(
             "Os dados dessa aplicação são provenientes das próprias instituições financeiras e são obtidos através do [Open Finance Brasil](https://openfinancebrasil.org.br/).")
