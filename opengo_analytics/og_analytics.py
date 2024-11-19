@@ -164,10 +164,6 @@ try:
             (fees_df["Type"].isin(loan_type_filter))
         ]
 
-        logger.info(f"institution_filter {institution_filter}")
-        logger.info(f"loan_type_filter {loan_type_filter}")
-        logger.info(f"filtered_fees_df {filtered_fees_df.to_string()}")
-
         # Option to show all items
         show_all = st.sidebar.checkbox("Mostrar todas as instituições", key="show_all")
 
