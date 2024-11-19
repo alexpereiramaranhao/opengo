@@ -154,6 +154,7 @@ try:
 
         loan_type_filter = st.sidebar.multiselect("Tipo empréstimo",
                                                   options=[option for option in loan_type_options if option],
+                                                  default=loan_type_options[:1] if len(loan_type_options)>2 else [],
                                                   on_change=reset_show_all)
 
         # Apply filters to DataFrame
